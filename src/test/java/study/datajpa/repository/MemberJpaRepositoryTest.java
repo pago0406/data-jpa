@@ -1,8 +1,12 @@
 package study.datajpa.repository;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.entity.Member;
@@ -90,6 +94,65 @@ class MemberJpaRepositoryTest {
         List<Member> result  = memberJpaRepository.findByUsername("AAA");
 
         assertThat(result.get(0).getUsername()).isEqualTo("AAA");
+
+
+    }
+
+    @Test
+    public void paging(){
+        memberJpaRepository.save(new Member("member1",10));
+        memberJpaRepository.save(new Member("member2",10));
+        memberJpaRepository.save(new Member("member3",10));
+        memberJpaRepository.save(new Member("member4",10));
+        memberJpaRepository.save(new Member("member5",10));
+
+
+        PageRequest.of(0,3, Sort.by(Sort.Direction.DESC,"username"));
+
+
+        int age=10;
+        int offset=1;
+        int limit=3;
+
+        //when
+
+        List<Member> members = memberJpaRepository.findByPage(age, offset, limit);
+        long totalCount= memberJpaRepository.totalCount(age);
+
+        //페이지 계산 공식 적용..
+        //totalpage= totalcount/ size
+        // 마지막 페이지
+        // 최초 페이지..
+
+        //then
+
+        for (Member member : members) {
+            System.out.println("member = " + member.getUsername());
+        }
+        assertThat(members.size()).isEqualTo(3);
+        assertThat(totalCount).isEqualTo(5);
+
+
+    }
+
+    @Test
+    public void bulkUpdate(){
+
+        //given
+        memberJpaRepository.save(new Member("member1",10));
+        memberJpaRepository.save(new Member("member2",19));
+        memberJpaRepository.save(new Member("member3",20));
+        memberJpaRepository.save(new Member("member4",21));
+        memberJpaRepository.save(new Member("member5",40));
+
+
+        //when
+
+        int resultCount=memberJpaRepository.bulkAgePlus(20);
+
+        //then
+
+        assertThat(resultCount).isEqualTo(3);
 
 
     }
