@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-
-public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom {
+//JpaspecificationExecutor 은 실무에서 안쓰는게 좋음. 지옥을 맛보게 됨
+public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom, JpaSpecificationExecutor {
 
 
     List<Member> findByUsernameAndAgeGreaterThan(String username,int age);
@@ -78,6 +78,18 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     List<Member> findLockByUsername(String username);
+
+
+    <T> List<T> findProjectionsByUsername(@Param("username") String username,Class<T> type);
+
+    @Query(value = "select * from member where username = ?",nativeQuery = true)
+    Member findByNativeQuery(String username);
+
+
+    @Query(value = "select m.member_id as id, m.username, t.name as teamName from member m left join team t" ,
+            countQuery = "select count(*) from member",
+            nativeQuery = true)
+    Page<MemberProjection> findByNativeProjection(Pageable pageable);
 
 
 
